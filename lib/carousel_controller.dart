@@ -9,6 +9,8 @@ import 'utils.dart';
 abstract class CarouselController {
   bool get ready;
 
+  int? get currentPage;
+
   Future<Null> get onReady;
 
   Future<void> nextPage({Duration? duration, Curve? curve});
@@ -38,8 +40,7 @@ class CarouselControllerImpl implements CarouselController {
     }
   }
 
-  void _setModeController() =>
-      _state!.changeMode(CarouselPageChangedReason.controller);
+  void _setModeController() => _state!.changeMode(CarouselPageChangedReason.controller);
 
   @override
   bool get ready => _state != null;
@@ -47,13 +48,14 @@ class CarouselControllerImpl implements CarouselController {
   @override
   Future<Null> get onReady => _readyCompleter.future;
 
+  @override
+  int? get currentPage => _state?.currentPage;
+
   /// Animates the controlled [CarouselSlider] to the next page.
   ///
   /// The animation lasts for the given duration and follows the given curve.
   /// The returned [Future] resolves when the animation completes.
-  Future<void> nextPage(
-      {Duration? duration = const Duration(milliseconds: 300),
-      Curve? curve = Curves.linear}) async {
+  Future<void> nextPage({Duration? duration = const Duration(milliseconds: 300), Curve? curve = Curves.linear}) async {
     final bool isNeedResetTimer = _state!.options.pauseAutoPlayOnManualNavigate;
     if (isNeedResetTimer) {
       _state!.onResetTimer();
@@ -69,9 +71,7 @@ class CarouselControllerImpl implements CarouselController {
   ///
   /// The animation lasts for the given duration and follows the given curve.
   /// The returned [Future] resolves when the animation completes.
-  Future<void> previousPage(
-      {Duration? duration = const Duration(milliseconds: 300),
-      Curve? curve = Curves.linear}) async {
+  Future<void> previousPage({Duration? duration = const Duration(milliseconds: 300), Curve? curve = Curves.linear}) async {
     final bool isNeedResetTimer = _state!.options.pauseAutoPlayOnManualNavigate;
     if (isNeedResetTimer) {
       _state!.onResetTimer();
@@ -88,8 +88,7 @@ class CarouselControllerImpl implements CarouselController {
   /// Jumps the page position from its current value to the given value,
   /// without animation, and without checking if the new value is in range.
   void jumpToPage(int page) {
-    final index = getRealIndex(_state!.pageController!.page!.toInt(),
-        _state!.realPage - _state!.initialPage, _state!.itemCount);
+    final index = getRealIndex(_state!.pageController!.page!.toInt(), _state!.realPage - _state!.initialPage, _state!.itemCount);
 
     _setModeController();
     final int pageToJump = _state!.pageController!.page!.toInt() + page - index;
@@ -100,20 +99,14 @@ class CarouselControllerImpl implements CarouselController {
   ///
   /// The animation lasts for the given duration and follows the given curve.
   /// The returned [Future] resolves when the animation completes.
-  Future<void> animateToPage(int page,
-      {Duration? duration = const Duration(milliseconds: 300),
-      Curve? curve = Curves.linear}) async {
+  Future<void> animateToPage(int page, {Duration? duration = const Duration(milliseconds: 300), Curve? curve = Curves.linear}) async {
     final bool isNeedResetTimer = _state!.options.pauseAutoPlayOnManualNavigate;
     if (isNeedResetTimer) {
       _state!.onResetTimer();
     }
-    final index = getRealIndex(_state!.pageController!.page!.toInt(),
-        _state!.realPage - _state!.initialPage, _state!.itemCount);
+    final index = getRealIndex(_state!.pageController!.page!.toInt(), _state!.realPage - _state!.initialPage, _state!.itemCount);
     _setModeController();
-    await _state!.pageController!.animateToPage(
-        _state!.pageController!.page!.toInt() + page - index,
-        duration: duration!,
-        curve: curve!);
+    await _state!.pageController!.animateToPage(_state!.pageController!.page!.toInt() + page - index, duration: duration!, curve: curve!);
     if (isNeedResetTimer) {
       _state!.onResumeTimer();
     }
